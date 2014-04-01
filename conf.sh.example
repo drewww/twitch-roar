@@ -1,0 +1,7 @@
+export SERVER='irc.twitch.tv'
+export PORT=6667
+
+export NICK='yournick'
+export TOKEN='oauth:'
+
+export ROOM='room'
