@@ -18,5 +18,5 @@ client.user(process.env['NICK'], process.env['NICK']);
 client.join('#' + process.env['ROOM']);
 
 client.on('message', function(evt) {
-	logger.info('<' + evt.from + '> ' + evt.message);
+	logger.info(Date.now() + ' <' + evt.from + '> ' + evt.message);
 });
