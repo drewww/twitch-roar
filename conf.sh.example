@@ -1,4 +1,4 @@
-export SERVER='irc.twitch.tv'
+export HOST='irc.twitch.tv'
 export PORT=6667
 
 export NICK='yournick'
