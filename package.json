@@ -1,0 +1,33 @@
+{
+  "name": "twitch-roar",
+  "version": "0.1.0",
+  "author": "Drew Harry <drew.harry@gmail.com>",
+  "description": "bot for analyzing twitch chat ",
+  "contributors": [ 
+    {
+      "name": "Drew Harry",
+      "email": "drew.harry@gmail.com"
+    } 
+  ],
+  "scripts": {
+    "start": "node ./bin/http-server",
+    "test": "vows --spec --isolate",
+    "predeploy": "echo This will be run before deploying the app",
+    "postdeploy": "echo This will be run after deploying the app"
+  },
+  "main": "./lib/http-server",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/drewww/twitch-roar.git"
+  },
+  "dependencies" : {
+    "commander" :  "2.0.0",
+    "winston"   :  "0.7.2",
+    "slate-irc" :  "0.4.0",
+    "underscore":  "1.5.1"
+  },
+  "analyze": false,
+  "engines": {
+    "node": ">=0.10"
+  }
+}
