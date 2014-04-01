@@ -32,6 +32,10 @@ if(program.args.length==1) {
 	log.on('line', function(line) {
 		var message = JSON.parse(line);
 
+		message.message = message.message.replace(/[^\x00-\x7F]/g, "");
+		message.message = message.message.toLowerCase();
+		message.message = message.message.trim();
+
 		if(windowStartTime==-1) {
 			// we're starting out.
 			windowStartTime = message.timestamp;
@@ -62,15 +66,16 @@ if(program.args.length==1) {
 
 					if(distance==1) {
 						duplicatesCount++;
-					} else if(distance > 0.95) {
+					} 
+
+					if(distance > 0.95) {
 						verySimilarCounts++;
 					}
-					console.log("\t" + distance + " " + message.message + " ?== " + otherMessage.message)
+					// console.log("\t" + distance + " " + message.message + " ?== " + otherMessage.message)
 				});
 			});
 
-			console.log(messagesInWindow.length + "; " + distances.mean + " " + distances.standard_deviation);
-			console.log("\t" + verySimilarCounts + " -> " + duplicatesCount);
+			console.log(messagesInWindow.length + "," + distances.mean + "," + distances.standard_deviation + "," + verySimilarCounts + ", " + duplicatesCount);
 			messagesInWindow = [];
 			windowStartTime = message.timestamp;
 		}
