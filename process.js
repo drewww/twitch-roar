@@ -6,6 +6,7 @@ var program = require('commander'),
 program
   .version('0.1.0')
   .usage('[options] <file>')
+  .option('-w, --window <n>', 'window size in ms', 10*1000)
   .parse(process.argv);
 
 
@@ -22,7 +23,7 @@ if(program.args.length==1) {
 
 	var messagesInWindow = 0;
 
-	var windowSize = 10*1000; // 10 secnds
+	var windowSize = program.window; // 10 secnds
 	var windowStartTime = -1;
 	log.on('line', function(line) {
 		var message = JSON.parse(line);
