@@ -13,7 +13,7 @@ var stream = net.connect({
 var client = irc(stream);
 
 
-fs.open('logs/' + process.env['ROOM'] + '-' + Date.now() + '.json', 'a', 666, function(err, fd) {
+fs.open('logs/' + process.env['ROOM'] + '-' + Date.now() + '.json', 'a', function(err, fd) {
 	logger.info('File opened.');
 
 	client.pass(process.env['TOKEN']);
@@ -22,7 +22,7 @@ fs.open('logs/' + process.env['ROOM'] + '-' + Date.now() + '.json', 'a', 666, fu
 	client.join('#' + process.env['ROOM']);
 
 	client.on('message', function(evt) {
-		logger.info(Date.now() + ' <' + evt.from + '> ' + evt.message);
-		fs.write(fd, JSON.stringify(fd), null, 'utf-8');
+		evt['timestamp'] = Date.now();
+		fs.write(fd, JSON.stringify(evt) + "\n", null, 'utf-8');
 	});
 });
