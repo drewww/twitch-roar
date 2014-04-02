@@ -41,6 +41,9 @@ if(program.args.length==1) {
 		message.message = message.message.toLowerCase();
 		message.message = message.message.trim();
 
+		// strip out links. anything starting with http.
+		message.message = message.message.replace(/\bhttps?:\/\/\s/g, "");
+
 		if(windowStartTime==-1) {
 			// we're starting out.
 			windowStartTime = message.timestamp;
