@@ -74,16 +74,18 @@ if(program.args.length==1) {
 				messageFrequencies[message.message] = obj;
 
 				// this section will track n-grams
-				var tokens = tokenizer.tokenize(message.message);
+				// var tokens = tokenizer.tokenize(message.message);
 
-				_.each(tokens, function(token) {
-					var obj = {token:token, count:0};
-					if(token in nGramFrequencies) {
-						obj = nGramFrequencies[token];
-					}
-					obj.count = obj.count+1;
-					nGramFrequencies[token] = obj;
-				});
+				// _.each(tokens, function(token) {
+				// 	var obj = {token:JSON.stringify(token), count:0};
+
+				// 	if(token in nGramFrequencies) {
+				// 		obj = nGramFrequencies[JSON.stringify(token)];
+				// 	}
+
+				// 	obj.count = obj.count+1;
+				// 	nGramFrequencies[JSON.stringify(token)] = obj;
+				// });
 
 				_.each(messagesInWindow, function(otherMessage) {
 					// throw out self-tests.
@@ -107,20 +109,27 @@ if(program.args.length==1) {
 				});
 			});
 
+			messageFrequencies = _.countBy(messagesInWindow, function(message) {
+				return message.message;
+			});
+
+			// console.log(_.pairs(messageFrequencies));
 			// now process the matching messages and show them
-			var messageFrequenciesArray = _.sortBy(_.toArray(messageFrequencies), 
-				'count').reverse();
+			var messageFrequenciesArray = _.sortBy(_.pairs(messageFrequencies), 
+				1).reverse();
 
-			var nGramFrequenciesArray = _.sortBy(
-				_.toArray(nGramFrequencies), 'count').reverse();
+			// console.log(JSON.stringify(messageFrequenciesArray))
 
-			// console.log(JSON.stringify(messageFrequenciesArray.slice(0, 5).map(function(item) {return item.message})));
-			console.log(JSON.stringify(nGramFrequenciesArray.slice(0, 5)));
+			// var nGramFrequenciesArray = _.sortBy(
+			// 	_.toArray(nGramFrequencies), 'count').reverse();
+
+			// console.log(JSON.stringify(messageFrequenciesArray.slice(0, 5).map(function(item) {return item[0]})));
+			// console.log(JSON.stringify(nGramFrequenciesArray.slice(0, 5)));
 
 			console.log(messagesInWindow.length + "," + distances.mean + "," +
 				distances.standard_deviation + "," + verySimilarCounts + ", " +
 				duplicatesCount + "," + messageFrequenciesArray.slice(0, 5)
-					.map(function(item) {return item.message + "," + item.count})
+					.map(function(item) {return item[0] + "," + item[1]})
 					.join(","));
 			messagesInWindow = [];
 			windowStartTime = message.timestamp;
