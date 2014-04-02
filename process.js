@@ -33,6 +33,7 @@ if(program.args.length==1) {
 		var message = JSON.parse(line);
 
 		message.message = message.message.replace(/[^\x00-\x7F]/g, "");
+		message.message = message.message.replace(/_,/g, "");
 		message.message = message.message.toLowerCase();
 		message.message = message.message.trim();
 
@@ -51,7 +52,17 @@ if(program.args.length==1) {
 			var distances = [];
 			var duplicatesCount = 0;
 			var verySimilarCounts = 0;
+
+			var messageFrequencies = {};
 			_.each(messagesInWindow, function(message) {
+
+				var obj = {message:message.message, count:0};
+				if(message.message in messageFrequencies) {
+					obj = messageFrequencies[message.message];
+				}
+				obj.count = obj.count+1;
+				messageFrequencies[message.message] = obj;
+
 				_.each(messagesInWindow, function(otherMessage) {
 					// throw out self-tests.
 					if(message.timestamp==otherMessage.timestamp &&
@@ -71,11 +82,20 @@ if(program.args.length==1) {
 					if(distance > 0.95) {
 						verySimilarCounts++;
 					}
-					// console.log("\t" + distance + " " + message.message + " ?== " + otherMessage.message)
 				});
 			});
 
-			console.log(messagesInWindow.length + "," + distances.mean + "," + distances.standard_deviation + "," + verySimilarCounts + ", " + duplicatesCount);
+			// now process the matching messages and show them
+			var messageFrequenciesArray = _.sortBy(_.toArray(messageFrequencies), 
+				'count').reverse();
+
+			// console.log(JSON.stringify(messageFrequenciesArray.slice(0, 5).map(function(item) {return item.message})));
+
+			console.log(messagesInWindow.length + "," + distances.mean + "," +
+				distances.standard_deviation + "," + verySimilarCounts + ", " +
+				duplicatesCount + "," + messageFrequenciesArray.slice(0, 5)
+					.map(function(item) {return item.message + "," + item.count})
+					.join(","));
 			messagesInWindow = [];
 			windowStartTime = message.timestamp;
 		}
