@@ -104,7 +104,6 @@ if(program.args.length==1) {
 				return message.message;
 			});
 
-
 			// do the analysis again for bigrams
 
 			var allBigrams = [];
@@ -136,10 +135,23 @@ if(program.args.length==1) {
 				pair[0] = JSON.parse(pair[0]).join(" ");
 
 				bigramsOutString += pair[0] + ", " + pair[1] + ", ";
+
+				// now remove each of the tokens from the tokenFrequences list
+				_.each(pair[0], function(token) {
+					delete tokenFrequencies[token];
+				});
 			});
 
 			var messageFrequenciesArray = _.sortBy(_.pairs(messageFrequencies), 
 				1).reverse();
+
+			var tokenFrequenciesArray = _.sortBy(_.pairs(tokenFrequencies), 1).reverse();
+
+			var tokensOutString = "";
+			_.each(tokenFrequenciesArray.slice(0, 5), function(token) {
+				var pair = token;
+				tokensOutString += pair[0] + ", " + pair[1] + ", ";
+			});
 
 			// console.log(JSON.stringify(messageFrequenciesArray.slice(0, 5).map(function(item) {return item[0]})));
 			// console.log(JSON.stringify(nGramFrequenciesArray.slice(0, 5)));
@@ -150,7 +162,7 @@ if(program.args.length==1) {
 					messageFrequenciesArray.slice(0, 5)
 					.map(function(item) {return item[0] + ", " + item[1]})
 					.join(", ") + ", "+
-					bigramsOutString
+					bigramsOutString + tokensOutString
 					);
 
 
