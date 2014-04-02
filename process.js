@@ -136,36 +136,63 @@ if(program.args.length==1) {
 
 				bigramsOutString += pair[0] + ", " + pair[1] + ", ";
 
-				// now remove each of the tokens from the tokenFrequences list
+				// now remove each of the tokens from the tokenFrequencies list
 				_.each(pair[0], function(token) {
 					delete tokenFrequencies[token];
 				});
+
+				// this will knock out the somewhat unlikely case that a bigram
+				// is also the entire message and it's super popular
+				delete messageFrequencies[pair[0]];
 			});
 
-			var messageFrequenciesArray = _.sortBy(_.pairs(messageFrequencies), 
-				1).reverse();
+			// now merge together all the messages, bigrams, and tokens
+			// and then resort. Take the top 10.
 
-			var tokenFrequenciesArray = _.sortBy(_.pairs(tokenFrequencies), 1).reverse();
+			var allCommonComponents = [];
 
-			var tokensOutString = "";
-			_.each(tokenFrequenciesArray.slice(0, 5), function(token) {
-				var pair = token;
-				tokensOutString += pair[0] + ", " + pair[1] + ", ";
-			});
+			allCommonComponents.push.apply(allCommonComponents, biGramFrequenciesArray);
+			allCommonComponents.push.apply(allCommonComponents, _.pairs(messageFrequencies));
+			allCommonComponents.push.apply(allCommonComponents, _.pairs(tokenFrequencies));
+
+			// sort it
+			var allCommonComponentsArray = _.sortBy(allCommonComponents, 1).reverse();
+
+			// console.log(allCommonComponentsArray.slice(0, 10));
+
+			// var messageFrequenciesArray = _.sortBy(_.pairs(messageFrequencies), 
+			// 	1).reverse();
+
+			// var tokenFrequenciesArray = _.sortBy(_.pairs(tokenFrequencies), 1).reverse();
+
+			// var tokensOutString = "";
+			// _.each(tokenFrequenciesArray.slice(0, 5), function(token) {
+			// 	var pair = token;
+			// 	tokensOutString += pair[0] + ", " + pair[1] + ", ";
+			// });
 
 			// console.log(JSON.stringify(messageFrequenciesArray.slice(0, 5).map(function(item) {return item[0]})));
 			// console.log(JSON.stringify(nGramFrequenciesArray.slice(0, 5)));
 
-			console.log(messagesInWindow.length + ", " + distances.mean + ", " +
-				distances.standard_deviation + ", " + verySimilarCounts + ", " +
-				duplicatesCount + ", " +
-					messageFrequenciesArray.slice(0, 5)
-					.map(function(item) {return item[0] + ", " + item[1]})
-					.join(", ") + ", "+
-					bigramsOutString + tokensOutString
-					);
+			// console.log(messagesInWindow.length + ", " + distances.mean + ", " +
+			// 	distances.standard_deviation + ", " + verySimilarCounts + ", " +
+			// 	duplicatesCount
+			// 		// messageFrequenciesArray.slice(0, 5)
+			// 		// .map(function(item) {return item[0] + ", " + item[1]})
+			// 		// .join(", ")
+			// 		// bigramsOutString + tokensOutString
+			// 		);
 
 
+			var outputFields = [messagesInWindow.length, duplicatesCount, verySimilarCounts];
+
+			_.each(allCommonComponentsArray.slice(0, 10), function(item) {
+				outputFields.push(item[0]);
+				outputFields.push(item[1]);				
+			});
+
+			console.log(outputFields.join(", "));
+			
 			messagesInWindow = [];
 			windowStartTime = message.timestamp;
 		}
