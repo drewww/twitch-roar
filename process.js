@@ -64,15 +64,6 @@ if(program.args.length==1) {
 
 			_.each(messagesInWindow, function(message) {
 
-
-				// this section tracks duplicate messages globally.
-				var obj = {original: message.originalMessage, message:message.message, count:0};
-				if(message.message in messageFrequencies) {
-					obj = messageFrequencies[message.message];
-				}
-				obj.count = obj.count+1;
-				messageFrequencies[message.message] = obj;
-
 				// this section will track n-grams
 				// var tokens = tokenizer.tokenize(message.message);
 
@@ -113,24 +104,56 @@ if(program.args.length==1) {
 				return message.message;
 			});
 
-			// console.log(_.pairs(messageFrequencies));
-			// now process the matching messages and show them
+
+			// do the analysis again for bigrams
+
+			var allBigrams = [];
+			var allTokens = [];
+			_.each(messagesInWindow, function(message) {
+				bigrams = natural.NGrams.bigrams(message.message);
+				allBigrams.push.apply(allBigrams, bigrams);
+				allTokens.push.apply(allTokens, tokenizer.tokenize(message.message));
+			});
+
+			biGramFrequencies = _.countBy(allBigrams, function(bigram) {
+				return JSON.stringify(bigram);
+			});
+
+			var tokenFrequencies = _.countBy(allTokens, function(token) {
+				return token;
+			});
+
+			var biGramFrequenciesArray = _.sortBy(
+				_.pairs(biGramFrequencies), 1).reverse();
+
+			var bigramsOutString = "";
+			_.each(biGramFrequenciesArray.slice(0, 5), function(bigram) {
+				// for each token in these bigrams, pull it out of the token
+				// frequencies list entirely. 
+
+				var pair = bigram;
+
+				pair[0] = JSON.parse(pair[0]).join(" ");
+
+				bigramsOutString += pair[0] + ", " + pair[1] + ", ";
+			});
+
 			var messageFrequenciesArray = _.sortBy(_.pairs(messageFrequencies), 
 				1).reverse();
-
-			// console.log(JSON.stringify(messageFrequenciesArray))
-
-			// var nGramFrequenciesArray = _.sortBy(
-			// 	_.toArray(nGramFrequencies), 'count').reverse();
 
 			// console.log(JSON.stringify(messageFrequenciesArray.slice(0, 5).map(function(item) {return item[0]})));
 			// console.log(JSON.stringify(nGramFrequenciesArray.slice(0, 5)));
 
-			console.log(messagesInWindow.length + "," + distances.mean + "," +
-				distances.standard_deviation + "," + verySimilarCounts + ", " +
-				duplicatesCount + "," + messageFrequenciesArray.slice(0, 5)
-					.map(function(item) {return item[0] + "," + item[1]})
-					.join(","));
+			console.log(messagesInWindow.length + ", " + distances.mean + ", " +
+				distances.standard_deviation + ", " + verySimilarCounts + ", " +
+				duplicatesCount + ", " +
+					messageFrequenciesArray.slice(0, 5)
+					.map(function(item) {return item[0] + ", " + item[1]})
+					.join(", ") + ", "+
+					bigramsOutString
+					);
+
+
 			messagesInWindow = [];
 			windowStartTime = message.timestamp;
 		}
