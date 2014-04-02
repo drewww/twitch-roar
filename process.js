@@ -32,8 +32,12 @@ if(program.args.length==1) {
 	log.on('line', function(line) {
 		var message = JSON.parse(line);
 
+		// cache the original message so we can extract it later
+		// if need be.
+		message.originalMessage = message.message;
 		message.message = message.message.replace(/[^\x00-\x7F]/g, "");
-		message.message = message.message.replace(/_,/g, "");
+		message.message = message.message.replace(/,/g, "");
+		message.message = message.message.replace(/_/g, "");
 		message.message = message.message.toLowerCase();
 		message.message = message.message.trim();
 
@@ -54,14 +58,32 @@ if(program.args.length==1) {
 			var verySimilarCounts = 0;
 
 			var messageFrequencies = {};
+			var nGramFrequencies = {};
+
+			var tokenizer = new natural.WordTokenizer();
+
 			_.each(messagesInWindow, function(message) {
 
-				var obj = {message:message.message, count:0};
+
+				// this section tracks duplicate messages globally.
+				var obj = {original: message.originalMessage, message:message.message, count:0};
 				if(message.message in messageFrequencies) {
 					obj = messageFrequencies[message.message];
 				}
 				obj.count = obj.count+1;
 				messageFrequencies[message.message] = obj;
+
+				// this section will track n-grams
+				var tokens = tokenizer.tokenize(message.message);
+
+				_.each(tokens, function(token) {
+					var obj = {token:token, count:0};
+					if(token in nGramFrequencies) {
+						obj = nGramFrequencies[token];
+					}
+					obj.count = obj.count+1;
+					nGramFrequencies[token] = obj;
+				});
 
 				_.each(messagesInWindow, function(otherMessage) {
 					// throw out self-tests.
@@ -89,7 +111,11 @@ if(program.args.length==1) {
 			var messageFrequenciesArray = _.sortBy(_.toArray(messageFrequencies), 
 				'count').reverse();
 
+			var nGramFrequenciesArray = _.sortBy(
+				_.toArray(nGramFrequencies), 'count').reverse();
+
 			// console.log(JSON.stringify(messageFrequenciesArray.slice(0, 5).map(function(item) {return item.message})));
+			console.log(JSON.stringify(nGramFrequenciesArray.slice(0, 5)));
 
 			console.log(messagesInWindow.length + "," + distances.mean + "," +
 				distances.standard_deviation + "," + verySimilarCounts + ", " +
