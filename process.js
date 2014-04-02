@@ -39,10 +39,11 @@ if(program.args.length==1) {
 		message.message = message.message.replace(/,/g, "");
 		message.message = message.message.replace(/_/g, "");
 		message.message = message.message.toLowerCase();
-		message.message = message.message.trim();
 
 		// strip out links. anything starting with http.
-		message.message = message.message.replace(/\bhttps?:\/\/\s/g, "");
+		message.message = message.message.replace(/https?:[^\s]*/g, "");
+
+		message.message = message.message.trim();
 
 		if(windowStartTime==-1) {
 			// we're starting out.
@@ -107,6 +108,14 @@ if(program.args.length==1) {
 				return message.message;
 			});
 
+			var out = {}
+			_.each(messageFrequencies, function(value, key) {
+				out[key] = (value-1)*4 + 1;
+			});
+			messageFrequencies = out;
+
+
+
 			// do the analysis again for bigrams
 
 			var allBigrams = [];
@@ -120,6 +129,13 @@ if(program.args.length==1) {
 			biGramFrequencies = _.countBy(allBigrams, function(bigram) {
 				return JSON.stringify(bigram);
 			});
+
+			out = {};
+			_.each(biGramFrequencies, function(value, key) {
+				out[key] = (value-1)*2 + 1;
+			});
+			biGramFrequencies = out;
+
 
 			var tokenFrequencies = _.countBy(allTokens, function(token) {
 				return token;
