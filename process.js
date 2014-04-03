@@ -214,11 +214,18 @@ if(program.args.length==1) {
 
 			var outputFields = [messagesInWindow.length, duplicatesCount, verySimilarCounts];
 
+
+			var finalFields = [];
+			var topCount = 0;
 			_.each(allCommonComponentsArray.slice(0, 10), function(item) {
-				outputFields.push(item[0]);
-				outputFields.push(item[1].score);				
-				outputFields.push(item[1].count);				
+				finalFields.push(item[0]);
+				finalFields.push(item[1].score);				
+				finalFields.push(item[1].count);				
+				topCount += item[1].count;
 			});
+
+			outputFields.push(topCount);
+			outputFields.push.apply(outputFields, finalFields);
 
 
 			console.log(outputFields.join(", "));
