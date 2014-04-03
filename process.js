@@ -111,6 +111,7 @@ if(program.args.length==1) {
 			var out = {}
 			_.each(messageFrequencies, function(value, key) {
 				out[key] = {score: (value-1)*4 + 1, count: value};
+
 			});
 			var messageFrequenciesAdjusted = out;
 
@@ -148,7 +149,9 @@ if(program.args.length==1) {
 			tokenFrequencies = out;
 
 			var biGramFrequenciesArray = _.sortBy(
-				_.pairs(biGramFrequenciesAdjusted), 1).reverse();
+				_.pairs(biGramFrequenciesAdjusted), function(item) {
+					return item[1].score;
+				}).reverse();
 
 			_.each(biGramFrequenciesArray.slice(0, 5), function(bigram) {
 				// for each token in these bigrams, pull it out of the token
@@ -167,6 +170,15 @@ if(program.args.length==1) {
 				// is also the entire message and it's super popular
 				delete messageFrequencies[pair[0]];
 				delete messageFrequenciesAdjusted[pair[0]];
+			});
+
+			// run through top messages and knock out matching tokens
+			var messageFrequenciesArray = _.sortBy(_.pairs(messageFrequenciesAdjusted), function(item) {
+				return item[1].score;
+			}).reverse();
+
+			_.each(messageFrequenciesArray.slice(0, 5), function(message) {
+				delete tokenFrequencies[message[0]];
 			});
 
 			// now merge together all the messages, bigrams, and tokens
