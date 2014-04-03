@@ -214,18 +214,37 @@ if(program.args.length==1) {
 
 			var outputFields = [messagesInWindow.length, duplicatesCount, verySimilarCounts];
 
+			var topComponents = allCommonComponentsArray.slice(0, 3);
+
+			var messagesContainingTopComponent = 0;
+			_.each(messagesInWindow, function(message) {
+				var matches = false;
+				_.each(topComponents, function(component) {
+					if(message.message.indexOf(component[0]) != -1) {
+						matches = true;
+					}
+				});
+
+				if(matches) {
+					messagesContainingTopComponent++;
+				}
+			});
+
+			outputFields.push(messagesContainingTopComponent);
 
 			var finalFields = [];
-			var topCount = 0;
-			_.each(allCommonComponentsArray.slice(0, 10), function(item) {
+			var containingTopString = 0;
+			_.each(allCommonComponentsArray.slice(0, 10), function(item, index) {
 				finalFields.push(item[0]);
 				finalFields.push(item[1].score);				
 				finalFields.push(item[1].count);				
-				topCount += item[1].count;
+				// if(index <= 0) {
+				// 	topCount += item[1].count;
+				// }
 			});
 
-			outputFields.push(topCount);
-			outputFields.push.apply(outputFields, finalFields);
+			// outputFields.push(topCount);
+			outputFields.push.apply(outputFields, finalFields)
 
 
 			console.log(outputFields.join(", "));
