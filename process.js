@@ -226,12 +226,18 @@ if(program.args.length==1) {
 
 			var outputFields = [messagesInWindow.length, duplicatesCount, verySimilarCounts];
 
-			var topComponents = allCommonComponentsArray.slice(0, 3);
+			var topComponents = allCommonComponentsArray.slice(0, 5);
 
 			var messagesContainingTopComponent = 0;
 			_.each(messagesInWindow, function(message) {
 				var matches = false;
 				_.each(topComponents, function(component) {
+					// skip any component that just has one instance; those aren't
+					// really 'top' in any sense.
+					if(component[1].count==1) {
+						return;
+					}
+
 					if(message.message.indexOf(component[0]) != -1) {
 						matches = true;
 					}
