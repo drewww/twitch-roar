@@ -177,30 +177,20 @@ if(program.args.length==1) {
 			// sort it
 			var allCommonComponentsArray = _.sortBy(allCommonComponents, 1).reverse();
 
-			// console.log(allCommonComponentsArray.slice(0, 10));
-
-			// var messageFrequenciesArray = _.sortBy(_.pairs(messageFrequencies), 
-			// 	1).reverse();
-
-			// var tokenFrequenciesArray = _.sortBy(_.pairs(tokenFrequencies), 1).reverse();
-
-			// var tokensOutString = "";
-			// _.each(tokenFrequenciesArray.slice(0, 5), function(token) {
-			// 	var pair = token;
-			// 	tokensOutString += pair[0] + ", " + pair[1] + ", ";
-			// });
-
-			// console.log(JSON.stringify(messageFrequenciesArray.slice(0, 5).map(function(item) {return item[0]})));
-			// console.log(JSON.stringify(nGramFrequenciesArray.slice(0, 5)));
-
-			// console.log(messagesInWindow.length + ", " + distances.mean + ", " +
-			// 	distances.standard_deviation + ", " + verySimilarCounts + ", " +
-			// 	duplicatesCount
-			// 		// messageFrequenciesArray.slice(0, 5)
-			// 		// .map(function(item) {return item[0] + ", " + item[1]})
-			// 		// .join(", ")
-			// 		// bigramsOutString + tokensOutString
-			// 		);
+			// okay, I want some sort of metric that is basically how self-similar messages
+			// are within a timing window. I'd sort of like to use the frequency counts
+			// for this, but because they're artificially inflated to deal with the rankings
+			// I can't rely on that. Options:
+			// 	1. Do some sort of re-count that goes back through the window and checks to 
+			//	   see what fraction of messages match a top common component. This is 
+			//	   sort of weird though.
+			//  2. Figure out some way to capture the pre-manipulated count values, and then 
+			//     basically add up the top occurence as a fraction of total messages
+			//	   		- so a lot of messages that don't have lots of common components would 
+			//			  score low on this metric
+			//			- the problem is that few messages will score relatively high.
+			//			- won't be a huge problem visually, though, because the bar will be so
+			//			  low and we'll represent it as a fraction of the total, not a %.
 
 
 			var outputFields = [messagesInWindow.length, duplicatesCount, verySimilarCounts];
@@ -209,6 +199,7 @@ if(program.args.length==1) {
 				outputFields.push(item[0]);
 				outputFields.push(item[1]);				
 			});
+
 
 			console.log(outputFields.join(", "));
 			
