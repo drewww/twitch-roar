@@ -110,9 +110,9 @@ if(program.args.length==1) {
 
 			var out = {}
 			_.each(messageFrequencies, function(value, key) {
-				out[key] = (value-1)*4 + 1;
+				out[key] = {score: (value-1)*4 + 1, count: value};
 			});
-			messageFrequencies = out;
+			var messageFrequenciesAdjusted = out;
 
 
 
@@ -132,28 +132,31 @@ if(program.args.length==1) {
 
 			out = {};
 			_.each(biGramFrequencies, function(value, key) {
-				out[key] = (value-1)*2 + 1;
+				out[JSON.parse(key).join(" ")] = {score: (value-1)*2 + 1, count: value};
 			});
-			biGramFrequencies = out;
+			var biGramFrequenciesAdjusted = out;
 
 
 			var tokenFrequencies = _.countBy(allTokens, function(token) {
 				return token;
 			});
 
-			var biGramFrequenciesArray = _.sortBy(
-				_.pairs(biGramFrequencies), 1).reverse();
+			out = {};
+			_.each(tokenFrequencies, function(value, key) {
+				out[key] = {score: value, count: value};
+			});
+			tokenFrequencies = out;
 
-			var bigramsOutString = "";
+			var biGramFrequenciesArray = _.sortBy(
+				_.pairs(biGramFrequenciesAdjusted), 1).reverse();
+
 			_.each(biGramFrequenciesArray.slice(0, 5), function(bigram) {
 				// for each token in these bigrams, pull it out of the token
 				// frequencies list entirely. 
 
 				var pair = bigram;
 
-				pair[0] = JSON.parse(pair[0]).join(" ");
-
-				bigramsOutString += pair[0] + ", " + pair[1] + ", ";
+				// pair[0] = JSON.parse(pair[0]).join(" ");
 
 				// now remove each of the tokens from the tokenFrequencies list
 				_.each(pair[0], function(token) {
@@ -163,19 +166,32 @@ if(program.args.length==1) {
 				// this will knock out the somewhat unlikely case that a bigram
 				// is also the entire message and it's super popular
 				delete messageFrequencies[pair[0]];
+				delete messageFrequenciesAdjusted[pair[0]];
 			});
 
 			// now merge together all the messages, bigrams, and tokens
 			// and then resort. Take the top 10.
 
-			var allCommonComponents = [];
+			var allCommonComponentsAdjusted = [];
 
-			allCommonComponents.push.apply(allCommonComponents, biGramFrequenciesArray);
-			allCommonComponents.push.apply(allCommonComponents, _.pairs(messageFrequencies));
-			allCommonComponents.push.apply(allCommonComponents, _.pairs(tokenFrequencies));
+			allCommonComponentsAdjusted.push.apply(allCommonComponentsAdjusted, biGramFrequenciesArray);
+			allCommonComponentsAdjusted.push.apply(allCommonComponentsAdjusted, _.pairs(messageFrequenciesAdjusted));
+			allCommonComponentsAdjusted.push.apply(allCommonComponentsAdjusted, _.pairs(tokenFrequencies));
+
+			// var allCommonComponentsRaw = {};
+
+
+			// _.extend(allCommonComponentsRaw, biGramFrequenciesArray);
+			// allCommonComponentsRaw.push.apply(allCommonComponentsRaw, _.pairs(messageFrequencies));
+			// allCommonComponentsRaw.push.apply(allCommonComponentsRaw, _.pairs(tokenFrequencies));
+
 
 			// sort it
-			var allCommonComponentsArray = _.sortBy(allCommonComponents, 1).reverse();
+			var allCommonComponentsArray = _.sortBy(allCommonComponentsAdjusted, function(item) {
+				return item[1].score;
+			}).reverse();
+
+			// console.log(JSON.stringify(allCommonComponentsArray.slice(0, 5)));
 
 			// okay, I want some sort of metric that is basically how self-similar messages
 			// are within a timing window. I'd sort of like to use the frequency counts
@@ -191,13 +207,17 @@ if(program.args.length==1) {
 			//			- the problem is that few messages will score relatively high.
 			//			- won't be a huge problem visually, though, because the bar will be so
 			//			  low and we'll represent it as a fraction of the total, not a %.
+			//			- there are some other issues with this model:
+			//				- because of the way we count, we could easily be double-counting
+			//				  messages.
 
 
 			var outputFields = [messagesInWindow.length, duplicatesCount, verySimilarCounts];
 
 			_.each(allCommonComponentsArray.slice(0, 10), function(item) {
 				outputFields.push(item[0]);
-				outputFields.push(item[1]);				
+				outputFields.push(item[1].score);				
+				outputFields.push(item[1].count);				
 			});
 
 
