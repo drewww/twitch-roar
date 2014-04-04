@@ -28,6 +28,7 @@ if(program.args.length==1) {
 
 	var windowSize = program.window; // 10 secnds
 	var windowStartTime = -1;
+	var windowCount = 0;
 
 	log.on('line', function(line) {
 		var message = JSON.parse(line);
@@ -224,7 +225,7 @@ if(program.args.length==1) {
 			//				  messages.
 
 
-			var outputFields = [messagesInWindow.length, duplicatesCount, verySimilarCounts];
+			var outputFields = [windowCount*windowSize/1000, messagesInWindow.length, duplicatesCount];
 
 			var topComponents = allCommonComponentsArray.slice(0, 5);
 
@@ -234,7 +235,7 @@ if(program.args.length==1) {
 				_.each(topComponents, function(component) {
 					// skip any component that just has one instance; those aren't
 					// really 'top' in any sense.
-					if(component[1].count==1) {
+					if(component[1].count<=4) {
 						return;
 					}
 
@@ -249,6 +250,7 @@ if(program.args.length==1) {
 			});
 
 			outputFields.push(messagesContainingTopComponent);
+			outputFields.push(messagesInWindow.length - messagesContainingTopComponent);
 
 			var finalFields = [];
 			var containingTopString = 0;
@@ -256,9 +258,6 @@ if(program.args.length==1) {
 				finalFields.push(item[0]);
 				finalFields.push(item[1].score);				
 				finalFields.push(item[1].count);				
-				// if(index <= 0) {
-				// 	topCount += item[1].count;
-				// }
 			});
 
 			// outputFields.push(topCount);
@@ -269,6 +268,7 @@ if(program.args.length==1) {
 			
 			messagesInWindow = [];
 			windowStartTime = message.timestamp;
+			windowCount++;
 		}
 
 		messagesInWindow.push(message);
