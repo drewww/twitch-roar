@@ -4,6 +4,7 @@ var logger = require('winston');
 var fs = require('fs');
 var program = require('commander');
 var analyze = require('./lib/analyze.js');
+var _ = require('underscore')._;
 
 
 program
@@ -56,8 +57,16 @@ fs.open('logs/' + room + '-' + Date.now() + '.json', 'a', function(err, fd) {
 			}
 		}
 
-		// 
+		// top strings 
+		var topString = ""
+		if(result["messagesContainingTopComponent"] > 5) {
+			var allCommonComponentsArray = result["allCommonComponentsArray"];
 
-		logger.info(chars + " (" + processingMessages.length + ")");
+			_.each(allCommonComponentsArray.slice(0, 3), function(item) {
+				topString += item[0] + " (" + item[1].count + ") ";
+			});
+		}
+
+		logger.info(chars +" "+ topString + "\t(" processingMessages.length + " in " + result["time"] + "ms)");
 	}, 10*1000);
 });
