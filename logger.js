@@ -9,6 +9,8 @@ var _ = require('underscore')._;
 
 program
   .version('0.1.0')
+  .option('-w, --window <n>', 'window size in ms', 10*1000)
+  .option('-l, --log', 'log to disk')
   .parse(process.argv);
 
 logger.cli();
@@ -26,18 +28,31 @@ room = program.args.length==1 ? program.args[0] : process.env['ROOM'];
 
 var messages = [];
 
-fs.open('logs/' + room + '-' + Date.now() + '.json', 'a', function(err, fd) {
-	logger.info('File opened.');
+if(program.log) {
+	fs.open('logs/' + room + '-' + Date.now() + '.json', 'a', function(err, fd) {
+		logger.info('File opened.');
+		connect();
+	});
+} else {
+	connect();
+}
 
+
+function connect() {
 	client.pass(process.env['TOKEN']);
 	client.nick(process.env['NICK']);
 	client.user(process.env['NICK'], process.env['NICK']);
 
 	client.join('#' + room);
 
+	logger.info("Connected to " + process.env['HOST'] + " #" + room);
 	client.on('message', function(evt) {
 		evt['timestamp'] = Date.now();
-		fs.write(fd, JSON.stringify(evt) + "\n", null, 'utf-8');
+
+		if(program.log) {
+			fs.write(fd, JSON.stringify(evt) + "\n", null, 'utf-8');
+		}
+
 		messages.push(evt);
 	});
 
@@ -67,6 +82,6 @@ fs.open('logs/' + room + '-' + Date.now() + '.json', 'a', function(err, fd) {
 			});
 		}
 
-		logger.info(chars +" "+ topString + "\t(" processingMessages.length + " in " + result["time"] + "ms)");
-	}, 10*1000);
-});
+		logger.info(chars +" "+ topString + "\t\t\t\t(" + processingMessages.length + " in " + result["time"] + "ms)");
+	}, program.window);
+}
