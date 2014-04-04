@@ -3,6 +3,7 @@ var net = require('net');
 var logger = require('winston');
 var fs = require('fs');
 var program = require('commander');
+var analyze = require('./lib/analyze.js');
 
 
 program
@@ -22,7 +23,7 @@ var room;
 
 room = program.args.length==1 ? program.args[0] : process.env['ROOM'];
 
-var numMessages = 0;
+var messages = [];
 
 fs.open('logs/' + room + '-' + Date.now() + '.json', 'a', function(err, fd) {
 	logger.info('File opened.');
@@ -36,11 +37,27 @@ fs.open('logs/' + room + '-' + Date.now() + '.json', 'a', function(err, fd) {
 	client.on('message', function(evt) {
 		evt['timestamp'] = Date.now();
 		fs.write(fd, JSON.stringify(evt) + "\n", null, 'utf-8');
-		numMessages++;
+		messages.push(evt);
 	});
 
 	setInterval(function() {
-		logger.info(Date.now() + ": " + numMessages);
-		numMessages = 0;
+		var processingMessages = messages;
+		messages = [];
+
+		var result = analyze.messages(processingMessages);
+
+		var chars = "";
+
+		for(var i=0; i<processingMessages.length; i+=5) {
+			if(i < result["messagesContainingTopComponent"]) {
+				chars += "o";
+			} else {
+				chars += "*";
+			}
+		}
+
+		// 
+
+		logger.info(chars + " (" + processingMessages.length + ")");
 	}, 10*1000);
 });
