@@ -31,14 +31,14 @@ var messages = [];
 if(program.log) {
 	fs.open('logs/' + room + '-' + Date.now() + '.json', 'a', function(err, fd) {
 		logger.info('File opened.');
-		connect();
+		connect(fd);
 	});
 } else {
 	connect();
 }
 
 
-function connect() {
+function connect(fd) {
 	client.pass(process.env['TOKEN']);
 	client.nick(process.env['NICK']);
 	client.user(process.env['NICK'], process.env['NICK']);
@@ -64,11 +64,13 @@ function connect() {
 
 		var chars = "";
 
-		for(var i=0; i<processingMessages.length; i+=5) {
+		for(var i=0; i<150; i+=5) {
 			if(i < result["messagesContainingTopComponent"]) {
 				chars += "o";
-			} else {
+			} else if(i<processingMessages.length) {
 				chars += "*";
+			} else {
+				chars += " "
 			}
 		}
 
@@ -82,6 +84,6 @@ function connect() {
 			});
 		}
 
-		logger.info(chars +" "+ topString + "\t\t\t\t(" + processingMessages.length + " in " + result["time"] + "ms)");
+		logger.info(chars + topString + " (" + processingMessages.length + " in " + result["time"] + "ms)");
 	}, program.window);
 }
